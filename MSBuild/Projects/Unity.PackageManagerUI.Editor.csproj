@@ -1,0 +1,449 @@
+<Project ToolsVersion="15.0">
+  <PropertyGroup>
+    <!--anborod: This is a weird thing, it is a required property (even if commented)-->
+    <!--<TargetFrameworks>netstandard2.0;uap10.0;net46</TargetFrameworks> -->
+    
+    <ProjectGuid>15a615c7-33aa-2409-09fe-0b28b0d5143c</ProjectGuid>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
+    
+    <DevelopmentBuild>false</DevelopmentBuild>
+    
+    <IsEditorOnlyTarget>True</IsEditorOnlyTarget>
+    <UnityEditorInstallFolder>C:\Program Files\Unity\Hub\Editor\2018.4.16f1\Editor\</UnityEditorInstallFolder>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <RelativeBuildFolder>..\Output\</RelativeBuildFolder>
+    <BuildFolder>$(MSBuildThisFileDirectory)$(RelativeBuildFolder)</BuildFolder>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!--NOTE: Currently one of the Unity packages has a * in AssemblyVersion identifier in the AssemblyInfo file, so have to do this.-->
+    <Deterministic>false</Deterministic>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PublishOutputPath)'==''">
+    <PublishOutputPath>$(MSBuildThisFileDirectory)..\Publish\</PublishOutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Platform)' == ''">
+    <Platform>WindowsStandalone32</Platform>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)' == ''">
+    <Configuration>InEditor</Configuration>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(UnityPlatform)' == ''">
+    <UnityPlatform>$(Platform)</UnityPlatform>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(UnityConfiguration)' == ''">
+    <UnityConfiguration>$(Configuration)</UnityConfiguration>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <Configurations>InEditor;Player</Configurations>
+    <Platforms>Android;iOS;WindowsStandalone32;WindowsStandalone64;WSA</Platforms>
+  </PropertyGroup>
+  
+  <!--Set proper Config/Platform now. We don't really need to rely on these above, but for VS it's a useful drop down-->
+  <PropertyGroup>
+    <Configuration>Release</Configuration>
+    <Platform>AnyCPU</Platform>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='InEditor'">
+    <Configuration>Debug</Configuration>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>$(BuildFolder)obj\$(ProjectGuid)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(BuildFolder)bin\</BaseOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(UnityConfiguration)\$(UnityPlatform)\</IntermediateOutputPath>
+  </PropertyGroup>
+  
+  <!-- This is special cased here for WSA player only-->
+  <PropertyGroup Condition="'$(UnityConfiguration)|$(UnityPlatform)' == 'Player|WSA'">
+    <OutputPath>$(BuildFolder)$(UnityConfiguration)\$(UnityPlatform)\</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UnityConfiguration)|$(UnityPlatform)' != 'Player|WSA'">
+    <OutputPath>$(BuildFolder)$(UnityConfiguration)\$(UnityPlatform)\$(MSBuildProjectName)\</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+  </PropertyGroup>
+
+  <!--IMPORT SDK.props manually to be able to set the BaseIntermediateOutputPath above path-->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+      <AssemblySearchPaths>{CandidateAssemblyFiles};{HintPathFromItem};{RawFileName};</AssemblySearchPaths>
+  </PropertyGroup>
+  
+  <Import Project="C:\Users\socce\unity\indicator\MSBuild\Projects\$(UnityPlatform).$(UnityConfiguration).props"/>
+
+  <!-- This is a "special" platform that will override references -->
+  <Import Project="C:\Users\socce\unity\indicator\MSBuild\Projects\Editor.InEditor.props" Condition="'$(IsEditorOnlyTarget)' == 'true'"/>
+
+  <PropertyGroup Condition="'$(UnityConfiguration)'=='InEditor'">
+    <AssemblySearchPaths>$(AssemblySearchPaths);C:\Users\socce\unity\indicator\Assets\MixedRealityToolkit.Providers\WindowsMixedReality\DotNetAdapter\Plugins\net46;C:\Users\socce\unity\indicator\Assets\Plugins;C:\Users\socce\unity\indicator\Assets\Plugins\WSA;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads\Editor;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.analytics;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing\Editor</AssemblySearchPaths>
+    <DevelopmentBuild>true</DevelopmentBuild>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(UnityConfiguration)'=='Player'">
+    <AssemblySearchPaths>$(AssemblySearchPaths);C:\Users\socce\unity\indicator\Assets\MixedRealityToolkit.Providers\WindowsMixedReality\DotNetAdapter\Plugins\net46;C:\Users\socce\unity\indicator\Assets\Plugins;C:\Users\socce\unity\indicator\Assets\Plugins\WSA;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads\Editor;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.analytics;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing\Editor</AssemblySearchPaths>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes)obj;bin;*.asmdef;*.asmdef.meta;*.csmap;</DefaultItemExcludes>
+    <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
+  </PropertyGroup>
+
+<!--PROJECT_REFERENCE_SET_TEMPLATE_START-->
+  <ItemGroup Condition="'$(UnityConfiguration)'=='InEditor'">
+
+    
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Microsoft.Windows.MixedReality.DotNetWinRT" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/Microsoft.Windows.MixedReality.DotNetWinRT.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="System.Numerics.Vectors" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/WSA/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Advertisements" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/UnityEngine.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Advertisements" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/Editor/UnityEditor.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Editor" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Editor.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.StandardEvents" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.StandardEvents.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Tracker" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Tracker.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Purchasing" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/UnityEngine.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Purchasing" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/Editor/UnityEditor.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+  </ItemGroup>
+<!--PROJECT_REFERENCE_SET_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_SET_TEMPLATE_START-->
+  <ItemGroup Condition="'$(UnityConfiguration)'=='Player'">
+
+    
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Microsoft.Windows.MixedReality.DotNetWinRT" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/Microsoft.Windows.MixedReality.DotNetWinRT.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="System.Numerics.Vectors" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/WSA/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Advertisements" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/UnityEngine.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Advertisements" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/Editor/UnityEditor.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Editor" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Editor.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.StandardEvents" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.StandardEvents.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Tracker" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Tracker.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Purchasing" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/UnityEngine.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Purchasing" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/Editor/UnityEditor.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+  </ItemGroup>
+<!--PROJECT_REFERENCE_SET_TEMPLATE_END-->
+  
+  <ItemGroup>
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\External\SemVersion.cs" Link="Sources\External\SemVersion.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\External\SemVersionExtension.cs" Link="Sources\External\SemVersionExtension.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Common\ApplicationUtil.cs" Link="Sources\Services\Common\ApplicationUtil.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Common\OperationSignal.cs" Link="Sources\Services\Common\OperationSignal.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Common\Resources.cs" Link="Sources\Services\Common\Resources.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Common\ThreadedDelay.cs" Link="Sources\Services\Common\ThreadedDelay.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Interfaces\IAddOperation.cs" Link="Sources\Services\Interfaces\IAddOperation.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Interfaces\IBaseOperation.cs" Link="Sources\Services\Interfaces\IBaseOperation.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Interfaces\IListOperation.cs" Link="Sources\Services\Interfaces\IListOperation.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Interfaces\IOperationFactory.cs" Link="Sources\Services\Interfaces\IOperationFactory.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Interfaces\IRemoveOperation.cs" Link="Sources\Services\Interfaces\IRemoveOperation.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Interfaces\ISearchOperation.cs" Link="Sources\Services\Interfaces\ISearchOperation.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\OperationFactory.cs" Link="Sources\Services\OperationFactory.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\Package.cs" Link="Sources\Services\Packages\Package.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageAssetPostprocessor.cs" Link="Sources\Services\Packages\PackageAssetPostprocessor.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageCollection.cs" Link="Sources\Services\Packages\PackageCollection.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageError.cs" Link="Sources\Services\Packages\PackageError.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageFilter.cs" Link="Sources\Services\Packages\PackageFilter.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageGroupOrigins.cs" Link="Sources\Services\Packages\PackageGroupOrigins.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageInfo.cs" Link="Sources\Services\Packages\PackageInfo.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageInfoListExtensions.cs" Link="Sources\Services\Packages\PackageInfoListExtensions.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageJsonHelper.cs" Link="Sources\Services\Packages\PackageJsonHelper.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageListExtensions.cs" Link="Sources\Services\Packages\PackageListExtensions.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageOrigin.cs" Link="Sources\Services\Packages\PackageOrigin.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageSearchFilter.cs" Link="Sources\Services\Packages\PackageSearchFilter.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageState.cs" Link="Sources\Services\Packages\PackageState.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Packages\PackageTag.cs" Link="Sources\Services\Packages\PackageTag.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Upm\UpmAddOperation.cs" Link="Sources\Services\Upm\UpmAddOperation.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Upm\UpmBaseOperation.cs" Link="Sources\Services\Upm\UpmBaseOperation.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Upm\UpmListOperation.cs" Link="Sources\Services\Upm\UpmListOperation.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Upm\UpmOperationFactory.cs" Link="Sources\Services\Upm\UpmOperationFactory.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Upm\UpmRemoveOperation.cs" Link="Sources\Services\Upm\UpmRemoveOperation.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\Services\Upm\UpmSearchOperation.cs" Link="Sources\Services\Upm\UpmSearchOperation.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\Common\Alert.cs" Link="Sources\UI\Common\Alert.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\Common\LoadingSpinner.cs" Link="Sources\UI\Common\LoadingSpinner.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\Common\PopupField.cs" Link="Sources\UI\Common\PopupField.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\Common\UIUtils.cs" Link="Sources\UI\Common\UIUtils.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\Common\VersionItem.cs" Link="Sources\UI\Common\VersionItem.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\Interfaces\IPackageManagerExtension.cs" Link="Sources\UI\Interfaces\IPackageManagerExtension.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageAddFromUrlField.cs" Link="Sources\UI\PackageAddFromUrlField.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageDetails.cs" Link="Sources\UI\PackageDetails.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageFiltering.cs" Link="Sources\UI\PackageFiltering.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageGroup.cs" Link="Sources\UI\PackageGroup.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageItem.cs" Link="Sources\UI\PackageItem.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageList.cs" Link="Sources\UI\PackageList.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageManagerExtensions.cs" Link="Sources\UI\PackageManagerExtensions.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageManagerPrefs.cs" Link="Sources\UI\PackageManagerPrefs.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageManagerToolbar.cs" Link="Sources\UI\PackageManagerToolbar.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageManagerWindow.cs" Link="Sources\UI\PackageManagerWindow.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageSearchToolbar.cs" Link="Sources\UI\PackageSearchToolbar.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\PackagesCopy\com.unity.package-manager-ui\Editor\Sources\UI\PackageStatusBar.cs" Link="Sources\UI\PackageStatusBar.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+
+    <Content Include="$(ProjectGuid).csmap">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <!--IMPORT SDK.targets-->
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!--We control whether we build the project this way, depending on the platform/configuration-->
+  <PropertyGroup>
+    <OriginalBuildDependsOn>$(BuildDependsOn)</OriginalBuildDependsOn>
+    <BuildDependsOn></BuildDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="OriginalBuild" DependsOnTargets="$(OriginalBuildDependsOn)">
+  </Target>
+
+  <Target Name="SetPlatformProperty">
+    <CreateProperty Value="AnyCPU">
+      <Output TaskParameter="Value" PropertyName="Platform"/>
+    </CreateProperty>
+  </Target>
+  
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
+    <CallTarget Targets="SetPlatformProperty"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|Android'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|iOS'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|WindowsStandalone32'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|WindowsStandalone64'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|WSA'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /y $(TargetDir)$(TargetName).dll $(PublishOutputPath)$(UnityConfiguration)\$(UnityPlatform)\&#xD;&#xA;xcopy /y $(TargetDir)$(TargetName).pdb $(PublishOutputPath)$(UnityConfiguration)\$(UnityPlatform)\" />
+  </Target>
+
+</Project>

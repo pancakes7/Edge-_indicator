@@ -1,0 +1,579 @@
+<Project ToolsVersion="15.0">
+  <PropertyGroup>
+    <!--anborod: This is a weird thing, it is a required property (even if commented)-->
+    <!--<TargetFrameworks>netstandard2.0;uap10.0;net46</TargetFrameworks> -->
+    
+    <ProjectGuid>3fd8365d-d9cf-49cc-9886-d651945cdaae</ProjectGuid>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
+    
+    <DevelopmentBuild>false</DevelopmentBuild>
+    
+    <IsEditorOnlyTarget>True</IsEditorOnlyTarget>
+    <UnityEditorInstallFolder>C:\Program Files\Unity\Hub\Editor\2018.4.16f1\Editor\</UnityEditorInstallFolder>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <RelativeBuildFolder>..\Output\</RelativeBuildFolder>
+    <BuildFolder>$(MSBuildThisFileDirectory)$(RelativeBuildFolder)</BuildFolder>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!--NOTE: Currently one of the Unity packages has a * in AssemblyVersion identifier in the AssemblyInfo file, so have to do this.-->
+    <Deterministic>false</Deterministic>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PublishOutputPath)'==''">
+    <PublishOutputPath>$(MSBuildThisFileDirectory)..\Publish\</PublishOutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Platform)' == ''">
+    <Platform>WindowsStandalone32</Platform>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)' == ''">
+    <Configuration>InEditor</Configuration>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(UnityPlatform)' == ''">
+    <UnityPlatform>$(Platform)</UnityPlatform>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(UnityConfiguration)' == ''">
+    <UnityConfiguration>$(Configuration)</UnityConfiguration>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <Configurations>InEditor;Player</Configurations>
+    <Platforms>Android;iOS;WindowsStandalone32;WindowsStandalone64;WSA</Platforms>
+  </PropertyGroup>
+  
+  <!--Set proper Config/Platform now. We don't really need to rely on these above, but for VS it's a useful drop down-->
+  <PropertyGroup>
+    <Configuration>Release</Configuration>
+    <Platform>AnyCPU</Platform>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='InEditor'">
+    <Configuration>Debug</Configuration>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>$(BuildFolder)obj\$(ProjectGuid)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(BuildFolder)bin\</BaseOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(UnityConfiguration)\$(UnityPlatform)\</IntermediateOutputPath>
+  </PropertyGroup>
+  
+  <!-- This is special cased here for WSA player only-->
+  <PropertyGroup Condition="'$(UnityConfiguration)|$(UnityPlatform)' == 'Player|WSA'">
+    <OutputPath>$(BuildFolder)$(UnityConfiguration)\$(UnityPlatform)\</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UnityConfiguration)|$(UnityPlatform)' != 'Player|WSA'">
+    <OutputPath>$(BuildFolder)$(UnityConfiguration)\$(UnityPlatform)\$(MSBuildProjectName)\</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+  </PropertyGroup>
+
+  <!--IMPORT SDK.props manually to be able to set the BaseIntermediateOutputPath above path-->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+      <AssemblySearchPaths>{CandidateAssemblyFiles};{HintPathFromItem};{RawFileName};</AssemblySearchPaths>
+  </PropertyGroup>
+  
+  <Import Project="C:\Users\socce\unity\indicator\MSBuild\Projects\$(UnityPlatform).$(UnityConfiguration).props"/>
+
+  <!-- This is a "special" platform that will override references -->
+  <Import Project="C:\Users\socce\unity\indicator\MSBuild\Projects\Editor.InEditor.props" Condition="'$(IsEditorOnlyTarget)' == 'true'"/>
+
+  <PropertyGroup Condition="'$(UnityConfiguration)'=='InEditor'">
+    <AssemblySearchPaths>$(AssemblySearchPaths);C:\Users\socce\unity\indicator\Assets\MixedRealityToolkit.Providers\WindowsMixedReality\DotNetAdapter\Plugins\net46;C:\Users\socce\unity\indicator\Assets\Plugins;C:\Users\socce\unity\indicator\Assets\Plugins\WSA;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads\Editor;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.analytics;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing\Editor</AssemblySearchPaths>
+    <DevelopmentBuild>true</DevelopmentBuild>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(UnityConfiguration)'=='Player'">
+    <AssemblySearchPaths>$(AssemblySearchPaths);C:\Users\socce\unity\indicator\Assets\MixedRealityToolkit.Providers\WindowsMixedReality\DotNetAdapter\Plugins\net46;C:\Users\socce\unity\indicator\Assets\Plugins;C:\Users\socce\unity\indicator\Assets\Plugins\WSA;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads\Editor;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.analytics;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing\Editor</AssemblySearchPaths>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes)obj;bin;*.asmdef;*.asmdef.meta;*.csmap;</DefaultItemExcludes>
+    <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
+  </PropertyGroup>
+
+<!--PROJECT_REFERENCE_SET_TEMPLATE_START-->
+  <ItemGroup Condition="'$(UnityConfiguration)'=='InEditor'">
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Async.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.BuildAndDeploy.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.ClassExtensions.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.Utilities.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Unity.TextMeshPro.Editor.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+    
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Microsoft.Windows.MixedReality.DotNetWinRT" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/Microsoft.Windows.MixedReality.DotNetWinRT.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="System.Numerics.Vectors" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/WSA/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Advertisements" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/UnityEngine.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Advertisements" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/Editor/UnityEditor.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Editor" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Editor.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.StandardEvents" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.StandardEvents.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Tracker" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Tracker.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Purchasing" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/UnityEngine.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Purchasing" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/Editor/UnityEditor.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+  </ItemGroup>
+<!--PROJECT_REFERENCE_SET_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_SET_TEMPLATE_START-->
+  <ItemGroup Condition="'$(UnityConfiguration)'=='Player'">
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Async.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.BuildAndDeploy.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.ClassExtensions.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.Utilities.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Unity.TextMeshPro.Editor.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+    
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Microsoft.Windows.MixedReality.DotNetWinRT" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/Microsoft.Windows.MixedReality.DotNetWinRT.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="System.Numerics.Vectors" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/WSA/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Advertisements" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/UnityEngine.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Advertisements" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/Editor/UnityEditor.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Editor" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Editor.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.StandardEvents" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.StandardEvents.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Tracker" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Tracker.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Purchasing" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/UnityEngine.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Purchasing" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/Editor/UnityEditor.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+  </ItemGroup>
+<!--PROJECT_REFERENCE_SET_TEMPLATE_END-->
+  
+  <ItemGroup>
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\ClippingBoxInspector.cs" Link="ClippingBoxInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\ClippingPlaneInspector.cs" Link="ClippingPlaneInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\ClippingPrimitiveInspector.cs" Link="ClippingPrimitiveInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\ClippingSphereInspector.cs" Link="ClippingSphereInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\ControllerPopupWindow.cs" Link="ControllerPopupWindow.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Data\ControllerInputActionOption.cs" Link="Data\ControllerInputActionOption.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Data\ControllerInputActionOptions.cs" Link="Data\ControllerInputActionOptions.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\HoverLightInspector.cs" Link="HoverLightInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\MixedRealityShaderGUI.cs" Link="MixedRealityShaderGUI.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\MixedRealityStandardShaderGUI.cs" Link="MixedRealityStandardShaderGUI.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\MixedRealityTextMeshProShaderGUI.cs" Link="MixedRealityTextMeshProShaderGUI.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\MixedRealityToolkitFacadeHandler.cs" Link="MixedRealityToolkitFacadeHandler.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\MixedRealityToolkitInspector.cs" Link="MixedRealityToolkitInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\MixedRealityToolkitShaderGUIUtilities.cs" Link="MixedRealityToolkitShaderGUIUtilities.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\MixedRealityWireframeShaderGUI.cs" Link="MixedRealityWireframeShaderGUI.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\BaseMixedRealityProfileInspector.cs" Link="Profiles\BaseMixedRealityProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\BaseMixedRealityToolkitConfigurationProfileInspector.cs" Link="Profiles\BaseMixedRealityToolkitConfigurationProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityBoundaryVisualizationProfileInspector.cs" Link="Profiles\MixedRealityBoundaryVisualizationProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityCameraProfileInspector.cs" Link="Profiles\MixedRealityCameraProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityControllerMappingProfileInspector.cs" Link="Profiles\MixedRealityControllerMappingProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityControllerVisualizationProfileInspector.cs" Link="Profiles\MixedRealityControllerVisualizationProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityDiagnosticsSystemProfileInspector.cs" Link="Profiles\MixedRealityDiagnosticsSystemProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityEyeTrackingProfileInspector.cs" Link="Profiles\MixedRealityEyeTrackingProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityGesturesProfileInspector.cs" Link="Profiles\MixedRealityGesturesProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityHandTrackingProfileInspector.cs" Link="Profiles\MixedRealityHandTrackingProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityInputActionRulesInspector.cs" Link="Profiles\MixedRealityInputActionRulesInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityInputActionsProfileInspector.cs" Link="Profiles\MixedRealityInputActionsProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityInputSystemProfileInspector.cs" Link="Profiles\MixedRealityInputSystemProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityMouseInputProfileInspector.cs" Link="Profiles\MixedRealityMouseInputProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityPointerProfileInspector.cs" Link="Profiles\MixedRealityPointerProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityProfileCloneWindow.cs" Link="Profiles\MixedRealityProfileCloneWindow.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityRegisteredServiceProviderProfileInspector.cs" Link="Profiles\MixedRealityRegisteredServiceProviderProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealitySceneSystemProfileInspector.cs" Link="Profiles\MixedRealitySceneSystemProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealitySpatialAwarenessMeshObserverProfileInspector.cs" Link="Profiles\MixedRealitySpatialAwarenessMeshObserverProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealitySpatialAwarenessSystemProfileInspector.cs" Link="Profiles\MixedRealitySpatialAwarenessSystemProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealitySpeechCommandsProfileInspector.cs" Link="Profiles\MixedRealitySpeechCommandsProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Profiles\MixedRealityToolkitConfigurationProfileInspector.cs" Link="Profiles\MixedRealityToolkitConfigurationProfileInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\EnumFlagsAttributeDrawer.cs" Link="PropertyDrawers\EnumFlagsAttributeDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\ExperimentalDrawer.cs" Link="PropertyDrawers\ExperimentalDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\HelpDrawer.cs" Link="PropertyDrawers\HelpDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\InputActionPropertyDrawer.cs" Link="PropertyDrawers\InputActionPropertyDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\MixedRealityPosePropertyDrawer.cs" Link="PropertyDrawers\MixedRealityPosePropertyDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\PhysicsLayerAttributeDrawer.cs" Link="PropertyDrawers\PhysicsLayerAttributeDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\PrefabPropertyDrawer.cs" Link="PropertyDrawers\PrefabPropertyDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\SceneAssetReferenceAttributeDrawer.cs" Link="PropertyDrawers\SceneAssetReferenceAttributeDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\SceneInfoDrawer.cs" Link="PropertyDrawers\SceneInfoDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\SceneInfoUtils.cs" Link="PropertyDrawers\SceneInfoUtils.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\ScenePickPropertyDrawer.cs" Link="PropertyDrawers\ScenePickPropertyDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\SelectRepairedTypeWindow.cs" Link="PropertyDrawers\SelectRepairedTypeWindow.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\SpeechCommandPropertyDrawer.cs" Link="PropertyDrawers\SpeechCommandPropertyDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\TagPropertyDrawer.cs" Link="PropertyDrawers\TagPropertyDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\TypeReferencePropertyDrawer.cs" Link="PropertyDrawers\TypeReferencePropertyDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\PropertyDrawers\Vector3RangePropertyDrawer.cs" Link="PropertyDrawers\Vector3RangePropertyDrawer.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\ProximityLightInspector.cs" Link="ProximityLightInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Setup\MixedRealityEditorSettings.cs" Link="Setup\MixedRealityEditorSettings.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Setup\MixedRealityProjectConfiguratorWindow.cs" Link="Setup\MixedRealityProjectConfiguratorWindow.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\InspectorFieldsUtility.cs" Link="Utilities\InspectorFieldsUtility.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\InspectorUIUtility.cs" Link="Utilities\InspectorUIUtility.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Lines\DataProviders\BaseLineDataProviderInspector.cs" Link="Utilities\Lines\DataProviders\BaseLineDataProviderInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Lines\DataProviders\BezierDataProviderInspector.cs" Link="Utilities\Lines\DataProviders\BezierDataProviderInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Lines\DataProviders\EllipseLineDataProviderInspector.cs" Link="Utilities\Lines\DataProviders\EllipseLineDataProviderInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Lines\DataProviders\ParabolaPhysicalLineDataProviderInspector.cs" Link="Utilities\Lines\DataProviders\ParabolaPhysicalLineDataProviderInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Lines\DataProviders\ParabolicConstrainedLineDataProviderInspector.cs" Link="Utilities\Lines\DataProviders\ParabolicConstrainedLineDataProviderInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Lines\DataProviders\RectangleLineDataProviderInspector.cs" Link="Utilities\Lines\DataProviders\RectangleLineDataProviderInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Lines\DataProviders\SimpleLineDataProviderInspector.cs" Link="Utilities\Lines\DataProviders\SimpleLineDataProviderInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Lines\DataProviders\SplineDataProviderInspector.cs" Link="Utilities\Lines\DataProviders\SplineDataProviderInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\MixedRealityInspectorUtility.cs" Link="Utilities\MixedRealityInspectorUtility.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\MixedRealityProfileUtility.cs" Link="Utilities\MixedRealityProfileUtility.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\MixedRealityStylesUtility.cs" Link="Utilities\MixedRealityStylesUtility.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Search\FieldSearchResult.cs" Link="Utilities\Search\FieldSearchResult.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Search\MixedRealitySearchInspectorUtility.cs" Link="Utilities\Search\MixedRealitySearchInspectorUtility.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Search\MixedRealitySearchUtility.cs" Link="Utilities\Search\MixedRealitySearchUtility.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Search\ProfileSearchResult.cs" Link="Utilities\Search\ProfileSearchResult.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Search\SearchConfig.cs" Link="Utilities\Search\SearchConfig.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit\Inspectors\Utilities\Text3DShaderGUI.cs" Link="Utilities\Text3DShaderGUI.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+
+    <Content Include="$(ProjectGuid).csmap">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <!--IMPORT SDK.targets-->
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!--We control whether we build the project this way, depending on the platform/configuration-->
+  <PropertyGroup>
+    <OriginalBuildDependsOn>$(BuildDependsOn)</OriginalBuildDependsOn>
+    <BuildDependsOn></BuildDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="OriginalBuild" DependsOnTargets="$(OriginalBuildDependsOn)">
+  </Target>
+
+  <Target Name="SetPlatformProperty">
+    <CreateProperty Value="AnyCPU">
+      <Output TaskParameter="Value" PropertyName="Platform"/>
+    </CreateProperty>
+  </Target>
+  
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
+    <CallTarget Targets="SetPlatformProperty"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|Android'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|iOS'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|WindowsStandalone32'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|WindowsStandalone64'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|WSA'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /y $(TargetDir)$(TargetName).dll $(PublishOutputPath)$(UnityConfiguration)\$(UnityPlatform)\&#xD;&#xA;xcopy /y $(TargetDir)$(TargetName).pdb $(PublishOutputPath)$(UnityConfiguration)\$(UnityPlatform)\" />
+  </Target>
+
+</Project>

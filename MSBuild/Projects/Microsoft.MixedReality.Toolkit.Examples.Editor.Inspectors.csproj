@@ -1,0 +1,367 @@
+<Project ToolsVersion="15.0">
+  <PropertyGroup>
+    <!--anborod: This is a weird thing, it is a required property (even if commented)-->
+    <!--<TargetFrameworks>netstandard2.0;uap10.0;net46</TargetFrameworks> -->
+    
+    <ProjectGuid>af55d837-e6dc-5fb4-cb3c-4559f317e7f6</ProjectGuid>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <LangVersion>7.3</LangVersion>
+    
+    <DevelopmentBuild>false</DevelopmentBuild>
+    
+    <IsEditorOnlyTarget>True</IsEditorOnlyTarget>
+    <UnityEditorInstallFolder>C:\Program Files\Unity\Hub\Editor\2018.4.16f1\Editor\</UnityEditorInstallFolder>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <RelativeBuildFolder>..\Output\</RelativeBuildFolder>
+    <BuildFolder>$(MSBuildThisFileDirectory)$(RelativeBuildFolder)</BuildFolder>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!--NOTE: Currently one of the Unity packages has a * in AssemblyVersion identifier in the AssemblyInfo file, so have to do this.-->
+    <Deterministic>false</Deterministic>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PublishOutputPath)'==''">
+    <PublishOutputPath>$(MSBuildThisFileDirectory)..\Publish\</PublishOutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Platform)' == ''">
+    <Platform>WindowsStandalone32</Platform>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)' == ''">
+    <Configuration>InEditor</Configuration>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(UnityPlatform)' == ''">
+    <UnityPlatform>$(Platform)</UnityPlatform>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(UnityConfiguration)' == ''">
+    <UnityConfiguration>$(Configuration)</UnityConfiguration>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <Configurations>InEditor;Player</Configurations>
+    <Platforms>Android;iOS;WindowsStandalone32;WindowsStandalone64;WSA</Platforms>
+  </PropertyGroup>
+  
+  <!--Set proper Config/Platform now. We don't really need to rely on these above, but for VS it's a useful drop down-->
+  <PropertyGroup>
+    <Configuration>Release</Configuration>
+    <Platform>AnyCPU</Platform>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='InEditor'">
+    <Configuration>Debug</Configuration>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>$(BuildFolder)obj\$(ProjectGuid)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(BuildFolder)bin\</BaseOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(UnityConfiguration)\$(UnityPlatform)\</IntermediateOutputPath>
+  </PropertyGroup>
+  
+  <!-- This is special cased here for WSA player only-->
+  <PropertyGroup Condition="'$(UnityConfiguration)|$(UnityPlatform)' == 'Player|WSA'">
+    <OutputPath>$(BuildFolder)$(UnityConfiguration)\$(UnityPlatform)\</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(UnityConfiguration)|$(UnityPlatform)' != 'Player|WSA'">
+    <OutputPath>$(BuildFolder)$(UnityConfiguration)\$(UnityPlatform)\$(MSBuildProjectName)\</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+  </PropertyGroup>
+
+  <!--IMPORT SDK.props manually to be able to set the BaseIntermediateOutputPath above path-->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+      <AssemblySearchPaths>{CandidateAssemblyFiles};{HintPathFromItem};{RawFileName};</AssemblySearchPaths>
+  </PropertyGroup>
+  
+  <Import Project="C:\Users\socce\unity\indicator\MSBuild\Projects\$(UnityPlatform).$(UnityConfiguration).props"/>
+
+  <!-- This is a "special" platform that will override references -->
+  <Import Project="C:\Users\socce\unity\indicator\MSBuild\Projects\Editor.InEditor.props" Condition="'$(IsEditorOnlyTarget)' == 'true'"/>
+
+  <PropertyGroup Condition="'$(UnityConfiguration)'=='InEditor'">
+    <AssemblySearchPaths>$(AssemblySearchPaths);C:\Users\socce\unity\indicator\Assets\MixedRealityToolkit.Providers\WindowsMixedReality\DotNetAdapter\Plugins\net46;C:\Users\socce\unity\indicator\Assets\Plugins;C:\Users\socce\unity\indicator\Assets\Plugins\WSA;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads\Editor;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.analytics;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing\Editor</AssemblySearchPaths>
+    <DevelopmentBuild>true</DevelopmentBuild>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(UnityConfiguration)'=='Player'">
+    <AssemblySearchPaths>$(AssemblySearchPaths);C:\Users\socce\unity\indicator\Assets\MixedRealityToolkit.Providers\WindowsMixedReality\DotNetAdapter\Plugins\net46;C:\Users\socce\unity\indicator\Assets\Plugins;C:\Users\socce\unity\indicator\Assets\Plugins\WSA;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.ads\Editor;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.analytics;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing;C:\Users\socce\unity\indicator\MSBuild\PackagesCopy\com.unity.purchasing\Editor</AssemblySearchPaths>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes)obj;bin;*.asmdef;*.asmdef.meta;*.csmap;</DefaultItemExcludes>
+    <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
+  </PropertyGroup>
+
+<!--PROJECT_REFERENCE_SET_TEMPLATE_START-->
+  <ItemGroup Condition="'$(UnityConfiguration)'=='InEditor'">
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Async.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.BuildAndDeploy.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.ClassExtensions.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.Utilities.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Examples.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Unity.TextMeshPro.Editor.csproj" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+    
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Microsoft.Windows.MixedReality.DotNetWinRT" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/Microsoft.Windows.MixedReality.DotNetWinRT.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="System.Numerics.Vectors" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/WSA/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Advertisements" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/UnityEngine.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Advertisements" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/Editor/UnityEditor.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Editor" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Editor.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.StandardEvents" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.StandardEvents.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Tracker" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Tracker.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Purchasing" Condition="'$(UnityPlatform)' == 'Android' OR '$(UnityPlatform)' == 'iOS' OR '$(UnityPlatform)' == 'WindowsStandalone32' OR '$(UnityPlatform)' == 'WindowsStandalone64' OR '$(UnityPlatform)' == 'WSA'">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/UnityEngine.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Purchasing" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/Editor/UnityEditor.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+  </ItemGroup>
+<!--PROJECT_REFERENCE_SET_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_SET_TEMPLATE_START-->
+  <ItemGroup Condition="'$(UnityConfiguration)'=='Player'">
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Async.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.BuildAndDeploy.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.ClassExtensions.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Editor.Utilities.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Microsoft.MixedReality.Toolkit.Examples.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+<!--PROJECT_REFERENCE_TEMPLATE_START-->
+    <ProjectReference Include="Unity.TextMeshPro.Editor.csproj" Condition="false">
+      <PrivateAssets>All</PrivateAssets>
+    </ProjectReference>
+<!--PROJECT_REFERENCE_TEMPLATE_END-->
+    
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Microsoft.Windows.MixedReality.DotNetWinRT" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/Microsoft.Windows.MixedReality.DotNetWinRT.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="System.Numerics.Vectors" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/MixedRealityToolkit.Providers/WindowsMixedReality/DotNetAdapter/Plugins/net46/System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="CameraPreview" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/Assets/Plugins/WSA/CameraPreview.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Advertisements" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/UnityEngine.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Advertisements" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.ads/Editor/UnityEditor.Advertisements.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Editor" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Editor.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.StandardEvents" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.StandardEvents.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="Unity.Analytics.Tracker" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.analytics/Unity.Analytics.Tracker.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEngine.Purchasing" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/UnityEngine.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+<!--PLUGIN_REFERENCE_TEMPLATE_START-->
+    <Reference Include="UnityEditor.Purchasing" Condition="false">
+      <Private>false</Private>
+      <HintPath>C:/Users/socce/unity/indicator/MSBuild/PackagesCopy/com.unity.purchasing/Editor/UnityEditor.Purchasing.dll</HintPath>
+    </Reference>
+<!--PLUGIN_REFERENCE_TEMPLATE_END-->
+  </ItemGroup>
+<!--PROJECT_REFERENCE_SET_TEMPLATE_END-->
+  
+  <ItemGroup>
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit.Examples\Inspectors\AssemblyInfo.cs" Link="AssemblyInfo.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+<!--SOURCE_INCLUDE_TEMPLATE_START-->
+    <Compile Include="..\..\Assets\MixedRealityToolkit.Examples\Inspectors\DwellProfileWithDecayInspector.cs" Link="DwellProfileWithDecayInspector.cs" />
+<!--SOURCE_INCLUDE_TEMPLATE_END-->
+
+    <Content Include="$(ProjectGuid).csmap">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <!--IMPORT SDK.targets-->
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!--We control whether we build the project this way, depending on the platform/configuration-->
+  <PropertyGroup>
+    <OriginalBuildDependsOn>$(BuildDependsOn)</OriginalBuildDependsOn>
+    <BuildDependsOn></BuildDependsOn>
+  </PropertyGroup>
+  
+  <Target Name="OriginalBuild" DependsOnTargets="$(OriginalBuildDependsOn)">
+  </Target>
+
+  <Target Name="SetPlatformProperty">
+    <CreateProperty Value="AnyCPU">
+      <Output TaskParameter="Value" PropertyName="Platform"/>
+    </CreateProperty>
+  </Target>
+  
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
+    <CallTarget Targets="SetPlatformProperty"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|Android'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|iOS'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|WindowsStandalone32'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|WindowsStandalone64'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_START-->
+    <CallTarget Targets="OriginalBuild" Condition="'$(UnityConfiguration)|$(UnityPlatform)'=='InEditor|WSA'"/>
+<!--SUPPORTED_PLATFORM_BUILD_CONDITION_TEMPLATE_END-->
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /y $(TargetDir)$(TargetName).dll $(PublishOutputPath)$(UnityConfiguration)\$(UnityPlatform)\&#xD;&#xA;xcopy /y $(TargetDir)$(TargetName).pdb $(PublishOutputPath)$(UnityConfiguration)\$(UnityPlatform)\" />
+  </Target>
+
+</Project>

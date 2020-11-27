@@ -1,0 +1,81 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CalcWhite
+//#pragma kernel SumWhite
+
+#define BLOCK_SIZE 64
+#define MAX(a,b) (a>b?a:b)
+#define MIN(a,b) (a<b?a:b)
+#define R(a) ((a&0xFF000000)>>24)
+#define G(a) ((a&0xFF0000)>>16)
+#define B(a) ((a&0xFF00)>>8)
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+
+bool IsRGBA;
+RWBuffer<uint> Whites;
+Buffer<uint> Pixels;
+uint Width, Height, Length;
+
+struct SV
+{
+    float s, v;
+};
+inline float max(float n1, float n2, float n3)
+{
+    float t = MAX(n1, n2);
+    return MAX(t, n3);
+}
+inline float min(float n1, float n2, float n3)
+{
+    float t = MIN(n1, n2);
+    return MIN(t, n3);
+}
+inline uint3 Expand(uint c)
+{
+    if (IsRGBA) return uint3(R(c), G(c), B(c));
+    return uint3(B(c), G(c), R(c));
+}
+inline SV CalcSV(uint3 c)
+{
+    SV ret;
+    float r = c.x / 255.f,
+        g = c.y / 255.f,
+        b = c.z / 255.f;
+    float cmax = max(r, g, b),
+        cmin = min(r, g, b),
+        d = cmax - cmin;
+    ret.s = cmax > 0.00001f ? d / cmax : 0.f;
+    ret.v = cmax;
+    return ret;
+}
+
+[numthreads(8, 8 ,1)]
+void CalcWhite(uint3 dtid : SV_DispatchThreadID)
+{
+    if (dtid.x < Width && dtid.y < Height)
+    {
+        int idx = dtid.x + dtid.y * Width;
+        float s, v;
+        SV ret;
+        ret = CalcSV(Expand(Pixels[idx]));        // BGRA
+        s = ret.s; v = ret.v;
+        Whites[idx] = s < 0.2 && v > 0.8 ? 1 : 0;
+    }
+}
+
+//[numthreads(64, 1, 1)]
+//void SumWhite(uint3 dtid : SV_DispatchThreadID,
+//    uint3 gtid : SV_GroupThreadID,
+//    uint3 gid : SV_GroupID)
+//{
+//    int total = (Length + 63) / 64;
+//    [unroll]
+//    for (uint w = 32; w > 0; w /= 2)
+//    {
+//        if (dtid.x + w < Length)
+//        {
+//            if (gtid.x < w) Whites[dtid.x] += Whites[dtid.x + w];
+//        }
+//        GroupMemoryBarrierWithGroupSync();
+//    }
+//}
